@@ -1,4 +1,33 @@
-{% extends "accounts/main.html" %}
-{% block content %}
-<h3>User profile</h3>
-{% endblock  %}
+{% extends "accounts/main.html" %} {% block content %} {% include "accounts/status.html" %}
+<div class="row">
+    <div class="col-md">
+        <div class="card card-body">
+            <table class="table table-sm">
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Date Ordered</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                    <th>Remove</th>
+                </tr>
+
+                    {% for product_detail in product_details %}
+                        {% if product_detail.product_id  != None%}
+                            <tr>
+                                <td>{{product_detail.name}}</td>
+                                <td>{{product_detail.category}}</td>
+                                <td>{{product_detail.date_created | date:'Y-m-d H:i s'}}</td>
+                                <td>{{product_detail.status}}</td>
+                                <td><a class="btn btn-sm btn-info" href="{% url 'update_order' product_detail.order_id %}">Update</a></td>
+                                <td><a class="btn btn-sm btn-danger" href="{% url 'delete_order' product_detail.order_id %}">Remove</a></td>
+                        </tr>
+                        {% else %}
+                            <p>No data found</p>
+                        {% endif %}
+                    {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

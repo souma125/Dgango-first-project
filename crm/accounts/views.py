@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import  HttpResponse
 from django.db import connection
-from .forms import OrderForm, CreateUserForm
+from .forms import OrderForm, CreateUserForm,CustomerForm
 from .models import *
 from .filters import OrderFilter
 from django.contrib.auth.forms import UserCreationForm
@@ -143,13 +143,57 @@ def register(request):
         if form.is_valid():
             user = form.save()
             # username = form.cleaned_data.get('username')
-            group = Group.objects.get(name='customer')
-            user.groups.add(group)
+            
             # messages.success(request,'Account was created successfuly for ' + user)
             return redirect('login')
         
     context = {'form': form}
     return render(request,'accounts/register.html',context)
-    
+
+@login_required(login_url='login')
+@allowed_user(allowed_roles=['customer'])    
 def userProfile(request):
-    return render(request,'accounts/user.html')
+    user_id = request.user.id
+    sql = '''SELECT
+    c.*,
+    o.product_id,
+    o.date_created,
+    p.name,
+    p.category,
+    o.status,
+    o.id as order_id
+FROM
+    accounts_customer AS c
+LEFT JOIN auth_user AS u
+ON
+    c.user_id = u.id
+LEFT JOIN accounts_order AS o
+ON
+    o.customer_id = c.id
+LEFT JOIN accounts_product AS P
+ON
+    p.id = o.product_id
+WHERE
+    u.id = %s'''
+    c = connection.cursor()
+    try:
+        c.execute(sql,[user_id])
+        product_details = dictfetchall(c)
+    finally:
+        c.close()
+    context = {
+            'product_details': product_details,
+        }
+    return render(request,'accounts/user.html',context)
+
+@login_required(login_url='login')
+@allowed_user(allowed_roles=['customer'])
+def accountSettings(request):
+    customer = request.user.customer
+    form = CustomerForm(instance=customer)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, request.FILES, instance=customer)
+        if form.is_valid():
+            form.save()
+    context={'form':form}
+    return render(request,'accounts/account_settings.html',context)

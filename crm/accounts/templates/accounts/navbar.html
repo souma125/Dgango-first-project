@@ -20,15 +20,15 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'products' %}">Products</a>
           </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'account' %}">Settings</a>
+          </li>
         {% endif %}
       </ul>
     </div>
-    {% if request.user %}
-      <span class="hello-msg">Hello,{{request.user}} </span>
-      <span><a class="hello-msg" href="{% url 'logout' %}">Sign out</a></span>
-    {% else %}
-      <span><a href="{% url 'registration' %}">Sign up</a></span>
-      <span><a href="{% url 'login' %}">Sign in</a></span>
-    {% endif %}
+    <span class="hello-msg">Hello,{{request.user}} </span>
+    <span><a class="hello-msg" href="{% url 'logout' %}">Sign out</a></span>
+
     
   </nav>
